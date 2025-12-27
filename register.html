@@ -1,0 +1,338 @@
+<!-- 
+Database Schema (MySQL)
+---------------------------------
+equipment(equipment_id PK, name, serial_number, purchase_date, warranty_info, location, department_id FK, employee_id FK, maintenance_team_id FK, default_technician_id FK, status ENUM[active,scrap])
+maintenance_teams(team_id PK, team_name)
+team_members(team_member_id PK, team_id FK, user_id FK)
+users(user_id PK, name, email, password, role ENUM[technician,manager,admin])
+maintenance_requests(request_id PK, subject, equipment_id FK, request_type ENUM[corrective,preventive], scheduled_date, duration, stage ENUM[new,in_progress,repaired,scrap], assigned_technician_id FK, maintenance_team_id FK, created_by FK)
+departments(department_id PK, dept_name)
+-->
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Register - GearGuard Maintenance Tracker</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="stylesheet" href="assets/css/styles.css">
+</head>
+<body class="bg-gray-50 min-h-screen">
+    <!-- Navigation -->
+    <nav class="bg-white shadow-lg">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            <div class="flex justify-between h-16">
+                <div class="flex items-center">
+                    <div class="flex-shrink-0">
+                        <a href="index.html" class="text-2xl font-bold text-blue-600">GearGuard</a>
+                    </div>
+                </div>
+                <div class="flex items-center space-x-4">
+                    <a href="index.html" class="text-gray-700 hover:text-blue-600 px-3 py-2 rounded-md text-sm font-medium">Back to Home</a>
+                </div>
+            </div>
+        </div>
+    </nav>
+
+    <!-- Main Content -->
+    <div class="min-h-screen flex items-center justify-center py-12 px-4 sm:px-6 lg:px-8">
+        <div class="max-w-md w-full space-y-8">
+            <!-- Header -->
+            <div class="text-center">
+                <h2 class="mt-6 text-3xl font-extrabold text-gray-900">
+                    Create your account
+                </h2>
+                <p class="mt-2 text-sm text-gray-600">
+                    Or
+                    <a href="login.html" class="font-medium text-blue-600 hover:text-blue-500">
+                        sign in to your existing account
+                    </a>
+                </p>
+            </div>
+
+            <!-- Registration Form -->
+            <form class="mt-8 space-y-6" id="registerForm" method="post" action="backend/register.php">
+                <!-- User Type Selection -->
+                <div class="space-y-4">
+                    <label class="block text-sm font-medium text-gray-700">I am a:</label>
+                    <div class="grid grid-cols-3 gap-3">
+                        <label class="user-type-label relative flex cursor-pointer rounded-lg border border-gray-300 bg-white p-4 shadow-sm focus:outline-none">
+                            <input type="radio" name="userType" value="technician" class="sr-only" required>
+                            <span class="flex flex-1">
+                                <span class="flex flex-col">
+                                    <span class="block text-sm font-medium text-gray-900">Technician</span>
+                                    <span class="mt-1 flex items-center text-xs text-gray-500">Handle requests</span>
+                                </span>
+                            </span>
+                            <span class="border-span pointer-events-none absolute -inset-px rounded-lg border-2" aria-hidden="true"></span>
+                        </label>
+                        <label class="user-type-label relative flex cursor-pointer rounded-lg border border-gray-300 bg-white p-4 shadow-sm focus:outline-none">
+                            <input type="radio" name="userType" value="manager" class="sr-only" required>
+                            <span class="flex flex-1">
+                                <span class="flex flex-col">
+                                    <span class="block text-sm font-medium text-gray-900">Manager</span>
+                                    <span class="mt-1 flex items-center text-xs text-gray-500">Manage operations</span>
+                                </span>
+                            </span>
+                            <span class="border-span pointer-events-none absolute -inset-px rounded-lg border-2" aria-hidden="true"></span>
+                        </label>
+                        <label class="user-type-label relative flex cursor-pointer rounded-lg border border-gray-300 bg-white p-4 shadow-sm focus:outline-none">
+                            <input type="radio" name="userType" value="admin" class="sr-only" required>
+                            <span class="flex flex-1">
+                                <span class="flex flex-col">
+                                    <span class="block text-sm font-medium text-gray-900">Admin</span>
+                                    <span class="mt-1 flex items-center text-xs text-gray-500">System admin</span>
+                                </span>
+                            </span>
+                            <span class="border-span pointer-events-none absolute -inset-px rounded-lg border-2" aria-hidden="true"></span>
+                        </label>
+                    </div>
+                </div>
+
+                <!-- Name Field -->
+                <div>
+                    <label for="name" class="block text-sm font-medium text-gray-700">
+                        Full Name
+                    </label>
+                    <div class="mt-1">
+                        <input id="name" name="name" type="text" autocomplete="name" required
+                               class="appearance-none relative block w-full px-3 py-2 border border-gray-300 placeholder-gray-500 text-gray-900 rounded-md focus:outline-none focus:ring-blue-500 focus:border-blue-500 focus:z-10 sm:text-sm form-input"
+                               placeholder="Enter your full name">
+                    </div>
+                </div>
+
+                <!-- Email Field -->
+                <div>
+                    <label for="email" class="block text-sm font-medium text-gray-700">
+                        Email address
+                    </label>
+                    <div class="mt-1">
+                        <input id="email" name="email" type="email" autocomplete="email" required
+                               class="appearance-none relative block w-full px-3 py-2 border border-gray-300 placeholder-gray-500 text-gray-900 rounded-md focus:outline-none focus:ring-blue-500 focus:border-blue-500 focus:z-10 sm:text-sm form-input"
+                               placeholder="Enter your email">
+                    </div>
+                </div>
+
+                <!-- Password Field -->
+                <div>
+                    <label for="password" class="block text-sm font-medium text-gray-700">
+                        Password
+                    </label>
+                    <div class="mt-1">
+                        <input id="password" name="password" type="password" autocomplete="new-password" required
+                               class="appearance-none relative block w-full px-3 py-2 border border-gray-300 placeholder-gray-500 text-gray-900 rounded-md focus:outline-none focus:ring-blue-500 focus:border-blue-500 focus:z-10 sm:text-sm form-input"
+                               placeholder="Create a password">
+                    </div>
+                </div>
+
+                <!-- Confirm Password Field -->
+                <div>
+                    <label for="confirmPassword" class="block text-sm font-medium text-gray-700">
+                        Confirm Password
+                    </label>
+                    <div class="mt-1">
+                        <input id="confirmPassword" name="confirmPassword" type="password" autocomplete="new-password" required
+                               class="appearance-none relative block w-full px-3 py-2 border border-gray-300 placeholder-gray-500 text-gray-900 rounded-md focus:outline-none focus:ring-blue-500 focus:border-blue-500 focus:z-10 sm:text-sm form-input"
+                               placeholder="Confirm your password">
+                    </div>
+                    <p id="passwordMatchError" class="mt-1 text-sm text-red-600 hidden">Passwords do not match</p>
+                </div>
+
+                <!-- Terms and Conditions -->
+                <div class="flex items-center">
+                    <input id="terms" name="terms" type="checkbox" required
+                           class="h-4 w-4 text-blue-600 focus:ring-blue-500 border-gray-300 rounded">
+                    <label for="terms" class="ml-2 block text-sm text-gray-900">
+                        I agree to the
+                        <a href="#" class="text-blue-600 hover:text-blue-500">Terms and Conditions</a>
+                    </label>
+                </div>
+
+                <!-- Submit Button -->
+                <div>
+                    <button name="submit" type="submit" id="registerBtn"
+                            class="group relative w-full flex justify-center py-2 px-4 border border-transparent text-sm font-medium rounded-md text-white bg-blue-600 hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 btn-hover">
+                        <span class="absolute left-0 inset-y-0 flex items-center pl-3">
+                            <svg class="h-5 w-5 text-blue-500 group-hover:text-blue-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M18 9v3m0 0v3m0-3h3m-3 0h-3m-2-5a4 4 0 11-8 0 4 4 0 018 0zM3 20a6 6 0 0112 0v1H3v-1z"></path>
+                            </svg>
+                        </span>
+                        <span id="registerBtnText">Create account</span>
+                        <div id="registerSpinner" class="hidden spinner ml-2"></div>
+                    </button>
+                </div>
+
+            </form>
+        </div>
+    </div>
+
+    <script>
+        // Input verification and animations
+        document.addEventListener('DOMContentLoaded', function() {
+            const userTypeInputs = document.querySelectorAll('input[name="userType"]');
+            const passwordInput = document.getElementById('password');
+            const confirmPasswordInput = document.getElementById('confirmPassword');
+            const passwordMatchError = document.getElementById('passwordMatchError');
+            const registerForm = document.getElementById('registerForm');
+
+            // Handle user type selection styling and behavior (animation)
+            userTypeInputs.forEach(input => {
+                // Add click event to the label for better UX
+                const label = input.closest('label');
+                if (label) {
+                    label.addEventListener('click', function(e) {
+                        // Prevent default label behavior
+                        e.preventDefault();
+                        
+                        // Uncheck all other inputs
+                        userTypeInputs.forEach(otherInput => {
+                            if (otherInput !== input) {
+                                otherInput.checked = false;
+                                updateRadioButtonStyling(otherInput);
+                            }
+                        });
+                        
+                        // Check this input
+                        input.checked = true;
+                        updateRadioButtonStyling(input);
+                    });
+                }
+                
+                // Add change event for form validation
+                input.addEventListener('change', function() {
+                    updateRadioButtonStyling(this);
+                });
+            });
+            
+            // Function to update radio button styling
+            function updateRadioButtonStyling(radioInput) {
+                const label = radioInput.closest('label');
+                const borderSpan = label?.querySelector('.border-span');
+                
+                if (radioInput.checked) {
+                    // Add active styling
+                    label.classList.add('ring-2');
+                    if (borderSpan) {
+                        borderSpan.classList.add('border-blue-500');
+                    }
+                } else {
+                    // Remove active styling
+                    label.classList.remove('ring-2');
+                    if (borderSpan) {
+                        borderSpan.classList.remove('border-blue-500');
+                    }
+                }
+            }
+
+            // Password match validation
+            function validatePasswordMatch() {
+                if (confirmPasswordInput.value && passwordInput.value !== confirmPasswordInput.value) {
+                    confirmPasswordInput.classList.add('border-red-500');
+                    passwordMatchError.classList.remove('hidden');
+                    return false;
+                } else {
+                    confirmPasswordInput.classList.remove('border-red-500');
+                    passwordMatchError.classList.add('hidden');
+                    return true;
+                }
+            }
+
+            confirmPasswordInput.addEventListener('input', validatePasswordMatch);
+            passwordInput.addEventListener('input', function() {
+                if (confirmPasswordInput.value) {
+                    validatePasswordMatch();
+                }
+            });
+
+            // Form submission validation
+            registerForm.addEventListener('submit', function(e) {
+                if (!validatePasswordMatch()) {
+                    e.preventDefault();
+                    return false;
+                }
+
+                // Email validation
+                const emailInput = document.getElementById('email');
+                if (!validateEmail(emailInput.value)) {
+                    e.preventDefault();
+                    emailInput.classList.add('border-red-500');
+                    alert('Please enter a valid email address');
+                    return false;
+                }
+
+                // Password strength check (minimum 6 characters)
+                if (passwordInput.value.length < 6) {
+                    e.preventDefault();
+                    passwordInput.classList.add('border-red-500');
+                    alert('Password must be at least 6 characters long');
+                    return false;
+                }
+            });
+
+        });
+
+        // Email validation utility
+        function validateEmail(email) {
+            const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+            return emailRegex.test(email);
+        }
+    </script>
+
+    <style>
+        .spinner {
+            width: 16px;
+            height: 16px;
+            border: 2px solid #ffffff;
+            border-top: 2px solid transparent;
+            border-radius: 50%;
+            animation: spin 1s linear infinite;
+        }
+
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+
+        .form-input:focus {
+            outline: none;
+            border-color: #3b82f6;
+            box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.1);
+        }
+
+        .btn-hover:hover {
+            transform: translateY(-1px);
+            box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
+        }
+
+        /* Custom radio button styling */
+        .user-type-label {
+            transition: all 0.2s ease-in-out;
+            cursor: pointer;
+        }
+        
+        .user-type-label:hover {
+            border-color: #3b82f6;
+            background-color: #f8fafc;
+            transform: translateY(-1px);
+            box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
+        }
+        
+        .user-type-label.ring-2 {
+            border-color: #3b82f6;
+            background-color: #eff6ff;
+            box-shadow: 0 0 0 2px rgba(59, 130, 246, 0.2);
+        }
+        
+        .user-type-label .border-span {
+            transition: all 0.2s ease-in-out;
+        }
+        
+        .user-type-label.ring-2 .border-span {
+            border-color: #3b82f6;
+            box-shadow: 0 0 0 2px rgba(59, 130, 246, 0.1);
+        }
+    </style>
+</body>
+</html>
+
