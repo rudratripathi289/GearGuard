@@ -1,11 +1,12 @@
 <!-- 
 Database Schema (MySQL)
 ---------------------------------
-students(student_id PK, name, email, password, department_id FK)
-teachers(teacher_id PK, name, email, password, department_id FK, role ENUM[student,teacher,HOD,admin])
+equipment(equipment_id PK, name, serial_number, purchase_date, warranty_info, location, department_id FK, employee_id FK, maintenance_team_id FK, default_technician_id FK, status ENUM[active,scrap])
+maintenance_teams(team_id PK, team_name)
+team_members(team_member_id PK, team_id FK, user_id FK)
+users(user_id PK, name, email, password, role ENUM[technician,manager,admin])
+maintenance_requests(request_id PK, subject, equipment_id FK, request_type ENUM[corrective,preventive], scheduled_date, duration, stage ENUM[new,in_progress,repaired,scrap], assigned_technician_id FK, maintenance_team_id FK, created_by FK)
 departments(department_id PK, dept_name)
-subjects(subject_id PK, subject_name, teacher_id FK, department_id FK)
-feedback(feedback_id PK, student_id FK, teacher_id FK, subject_id FK, rating INT, comment TEXT, timestamp)
 -->
 
 <!DOCTYPE html>
@@ -13,9 +14,9 @@ feedback(feedback_id PK, student_id FK, teacher_id FK, subject_id FK, rating INT
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Login - Student Feedback System</title>
+    <title>Login - GearGuard Maintenance Tracker</title>
     <script src="https://cdn.tailwindcss.com"></script>
-    <link rel="stylesheet" href="../assets/css/styles.css">
+    <link rel="stylesheet" href="assets/css/styles.css">
 </head>
 <body class="bg-gray-50 min-h-screen">
     <!-- Navigation -->
@@ -24,12 +25,11 @@ feedback(feedback_id PK, student_id FK, teacher_id FK, subject_id FK, rating INT
             <div class="flex justify-between h-16">
                 <div class="flex items-center">
                     <div class="flex-shrink-0">
-                        <a href="../index.html" class="text-2xl font-bold text-blue-600">FeedbackHub</a>
+                        <a href="index.html" class="text-2xl font-bold text-blue-600">GearGuard</a>
                     </div>
                 </div>
                 <div class="flex items-center space-x-4">
-                    <a href="../index.html" class="text-gray-700 hover:text-blue-600 px-3 py-2 rounded-md text-sm font-medium">Back to Home</a>
-                    <a href="register.html" class="text-gray-700 hover:text-blue-600 px-3 py-2 rounded-md text-sm font-medium">Create Account</a>
+                    <a href="index.html" class="text-gray-700 hover:text-blue-600 px-3 py-2 rounded-md text-sm font-medium">Back to Home</a>
                 </div>
             </div>
         </div>
@@ -41,38 +41,35 @@ feedback(feedback_id PK, student_id FK, teacher_id FK, subject_id FK, rating INT
             <!-- Header -->
             <div class="text-center">
                 <h2 class="mt-6 text-3xl font-extrabold text-gray-900">
-                    Sign in to your account
+                    Sign in to GearGuard
                 </h2>
                 <p class="mt-2 text-sm text-gray-600">
-                    Or
-                    <a href="register.html" class="font-medium text-blue-600 hover:text-blue-500">
-                        create a new account
-                    </a>
+                    Access your maintenance management dashboard
                 </p>
             </div>
 
             <!-- Login Form -->
-            <form class="mt-8 space-y-6" id="loginForm" method="post" action="../../backend/login.php">
+            <form class="mt-8 space-y-6" id="loginForm" method="post" action="backend/login.php">
                 <!-- User Type Selection -->
                 <div class="space-y-4">
                     <label class="block text-sm font-medium text-gray-700">I am a:</label>
                     <div class="grid grid-cols-3 gap-3">
                         <label class="user-type-label relative flex cursor-pointer rounded-lg border border-gray-300 bg-white p-4 shadow-sm focus:outline-none">
-                            <input type="radio" name="userType" value="student" class="sr-only" required>
+                            <input type="radio" name="userType" value="technician" class="sr-only" required>
                             <span class="flex flex-1">
                                 <span class="flex flex-col">
-                                    <span class="block text-sm font-medium text-gray-900">Student</span>
-                                    <span class="mt-1 flex items-center text-xs text-gray-500">Submit feedback</span>
+                                    <span class="block text-sm font-medium text-gray-900">Technician</span>
+                                    <span class="mt-1 flex items-center text-xs text-gray-500">Handle requests</span>
                                 </span>
                             </span>
                             <span class="border-span pointer-events-none absolute -inset-px rounded-lg border-2" aria-hidden="true"></span>
                         </label>
                         <label class="user-type-label relative flex cursor-pointer rounded-lg border border-gray-300 bg-white p-4 shadow-sm focus:outline-none">
-                            <input type="radio" name="userType" value="teacher" class="sr-only" required>
+                            <input type="radio" name="userType" value="manager" class="sr-only" required>
                             <span class="flex flex-1">
                                 <span class="flex flex-col">
-                                    <span class="block text-sm font-medium text-gray-900">Teacher</span>
-                                    <span class="mt-1 flex items-center text-xs text-gray-500">View feedback</span>
+                                    <span class="block text-sm font-medium text-gray-900">Manager</span>
+                                    <span class="mt-1 flex items-center text-xs text-gray-500">Manage operations</span>
                                 </span>
                             </span>
                             <span class="border-span pointer-events-none absolute -inset-px rounded-lg border-2" aria-hidden="true"></span>
@@ -82,7 +79,7 @@ feedback(feedback_id PK, student_id FK, teacher_id FK, subject_id FK, rating INT
                             <span class="flex flex-1">
                                 <span class="flex flex-col">
                                     <span class="block text-sm font-medium text-gray-900">Admin</span>
-                                    <span class="mt-1 flex items-center text-xs text-gray-500">Manage system</span>
+                                    <span class="mt-1 flex items-center text-xs text-gray-500">System admin</span>
                                 </span>
                             </span>
                             <span class="border-span pointer-events-none absolute -inset-px rounded-lg border-2" aria-hidden="true"></span>
@@ -126,7 +123,7 @@ feedback(feedback_id PK, student_id FK, teacher_id FK, subject_id FK, rating INT
 
                     <div class="text-sm">
                         <a href="#" class="font-medium text-blue-600 hover:text-blue-500">
-                            Forgot your password?
+                            Forgot password?
                         </a>
                     </div>
                 </div>
