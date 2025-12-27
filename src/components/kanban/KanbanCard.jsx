@@ -1,11 +1,19 @@
 import { Link } from 'react-router-dom';
 import PriorityBadge from '../common/PriorityBadge';
 import StatusBadge from '../common/StatusBadge';
+import { mockUsers } from '../../services/mockData';
 
 export default function KanbanCard({ request }) {
-  const truncatedDescription = request.issueDescription.length > 100
-    ? request.issueDescription.substring(0, 100) + '...'
-    : request.issueDescription;
+  if (!request) return null;
+
+  const issueDescription = request.issueDescription || '';
+  const truncatedDescription = issueDescription.length > 100
+    ? issueDescription.substring(0, 100) + '...'
+    : issueDescription;
+
+  const employee = request.createdByUserId 
+    ? mockUsers.find(u => u.id === request.createdByUserId)
+    : null;
 
   const handleDragStart = (e) => {
     e.dataTransfer.setData('requestId', request.id);
@@ -19,6 +27,13 @@ export default function KanbanCard({ request }) {
       className="bg-white rounded-lg shadow-md p-4 mb-3 hover:shadow-lg transition-shadow border border-gray-200 cursor-move"
     >
       <Link to={`/requests/${request.id}`} className="block">
+        {employee && (
+          <div className="mb-2 pb-2 border-b border-gray-200">
+            <span className="text-xs font-medium text-gray-600">Employee:</span>
+            <span className="text-xs text-gray-800 ml-1">{employee.name}</span>
+          </div>
+        )}
+        
         <div className="flex justify-between items-start mb-2">
           <h4 className="font-semibold text-gray-800 text-sm">
             {request.equipment?.name || 'Unknown Equipment'}

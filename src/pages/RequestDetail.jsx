@@ -4,6 +4,8 @@ import { requestService } from '../services/requestService';
 import { userService } from '../services/userService';
 import { useAuth } from '../hooks/useAuth';
 import { KanbanStatus, Priority } from '../types';
+import { canChangeRequestStatus, canAssignTechnician, canAddComments, canViewRequest } from '../utils/permissions';
+import { mockUsers } from '../services/mockData';
 import Loading from '../components/common/Loading';
 import ErrorState from '../components/common/ErrorState';
 import PriorityBadge from '../components/common/PriorityBadge';
@@ -86,13 +88,10 @@ export default function RequestDetail() {
     }
   };
 
-  const canEdit = () => {
-    if (isAdmin()) return true;
-    if (isTechnician() && request?.assignedTechnicianId === user.id) return true;
-    return false;
-  };
-
   const isCompleted = request?.status === KanbanStatus.COMPLETED;
+  const canEditStatus = canChangeRequestStatus(user?.role);
+  const canEditAssignment = canAssignTechnician(user?.role);
+  const canAddComment = canAddComments(user?.role, request, user?.id);
 
   if (loading) {
     return <Loading />;
@@ -104,6 +103,10 @@ export default function RequestDetail() {
 
   if (!request) {
     return <ErrorState message="Request not found" />;
+  }
+
+  if (!canViewRequest(user?.role, request, user?.id)) {
+    return <ErrorState message="You don't have permission to view this request" />;
   }
 
   return (
@@ -138,7 +141,7 @@ export default function RequestDetail() {
 
               <div>
                 <span className="text-sm font-medium text-gray-600">Issue Description:</span>
-                <p className="text-gray-800 mt-1 whitespace-pre-wrap">{request.issueDescription}</p>
+                <p className="text-gray-800 mt-1 whitespace-pre-wrap">{request.issueDescription || 'No description provided'}</p>
               </div>
 
               <div className="flex items-center space-x-4">
@@ -163,6 +166,18 @@ export default function RequestDetail() {
                 </p>
               </div>
 
+              {(() => {
+                if (!request.createdByUserId) return null;
+                const employee = mockUsers.find(u => u.id === request.createdByUserId);
+                return employee ? (
+                  <div>
+                    <span className="text-sm font-medium text-gray-600">Requested By:</span>
+                    <p className="text-gray-800 mt-1">{employee.name}</p>
+                    <p className="text-sm text-gray-600">{employee.email}</p>
+                  </div>
+                ) : null;
+              })()}
+
               {request.assignedTechnician && (
                 <div>
                   <span className="text-sm font-medium text-gray-600">Assigned Technician:</span>
@@ -174,29 +189,61 @@ export default function RequestDetail() {
           </div>
 
           <div className="bg-white rounded-lg shadow border border-gray-200 p-6">
-            <h2 className="text-xl font-semibold text-gray-800 mb-4">Comments & Updates</h2>
-            <div className="space-y-4 mb-4">
-              {request.comments && request.comments.length > 0 ? (
+            <h2 className="text-xl font-semibold text-gray-800 mb-4">Activity Timeline</h2>
+            <div className="space-y-4 mb-6">
+              <div className="border-l-4 border-gray-300 pl-4 py-2">
+                <div className="flex justify-between items-start mb-1">
+                  <span className="font-semibold text-gray-800">Request Created</span>
+                  <span className="text-xs text-gray-500">
+                    {new Date(request.createdAt).toLocaleString()}
+                  </span>
+                </div>
+                <p className="text-sm text-gray-600">
+                  Status: <StatusBadge status={KanbanStatus.NEW} />
+                </p>
+                {(() => {
+                  if (!request.createdByUserId) return null;
+                  const employee = mockUsers.find(u => u.id === request.createdByUserId);
+                  return employee ? (
+                    <p className="text-sm text-gray-600 mt-1">Created by {employee.name}</p>
+                  ) : null;
+                })()}
+              </div>
+
+              {request.updatedAt !== request.createdAt && (
+                <div className="border-l-4 border-blue-500 pl-4 py-2">
+                  <div className="flex justify-between items-start mb-1">
+                    <span className="font-semibold text-gray-800">Status Updated</span>
+                    <span className="text-xs text-gray-500">
+                      {new Date(request.updatedAt).toLocaleString()}
+                    </span>
+                  </div>
+                  <p className="text-sm text-gray-600">
+                    Current Status: <StatusBadge status={request.status} />
+                  </p>
+                </div>
+              )}
+
+              {request.comments && request.comments.length > 0 && (
                 request.comments
-                  .sort((a, b) => new Date(b.createdAt) - new Date(a.createdAt))
-                  .map((comment) => (
-                    <div key={comment.id} className="border-l-4 border-blue-500 pl-4 py-2">
+                  .sort((a, b) => new Date(a.createdAt) - new Date(b.createdAt))
+                  .map((comment, index) => (
+                    <div key={comment.id} className="border-l-4 border-green-500 pl-4 py-2">
                       <div className="flex justify-between items-start mb-1">
                         <span className="font-semibold text-gray-800">{comment.userName}</span>
                         <span className="text-xs text-gray-500">
                           {new Date(comment.createdAt).toLocaleString()}
                         </span>
                       </div>
-                      <p className="text-gray-700 whitespace-pre-wrap">{comment.content}</p>
+                      <p className="text-sm text-gray-700">{comment.content}</p>
                     </div>
                   ))
-              ) : (
-                <p className="text-gray-500 text-center py-4">No comments yet</p>
               )}
             </div>
 
-            {canEdit() && !isCompleted && (
-              <div className="border-t pt-4">
+            {canAddComment && !isCompleted && (
+              <div className="border-t pt-4 mt-4">
+                <h3 className="text-lg font-semibold text-gray-800 mb-3">Add Comment</h3>
                 <textarea
                   value={comment}
                   onChange={(e) => setComment(e.target.value)}
@@ -217,7 +264,7 @@ export default function RequestDetail() {
         </div>
 
         <div className="space-y-6">
-          {isAdmin() && !isCompleted && (
+          {canEditAssignment && !isCompleted && (
             <div className="bg-white rounded-lg shadow border border-gray-200 p-6">
               <h2 className="text-xl font-semibold text-gray-800 mb-4">Assign Technician</h2>
               <select
@@ -242,7 +289,7 @@ export default function RequestDetail() {
             </div>
           )}
 
-          {canEdit() && !isCompleted && (
+          {canEditStatus && !isCompleted && (
             <div className="bg-white rounded-lg shadow border border-gray-200 p-6">
               <h2 className="text-xl font-semibold text-gray-800 mb-4">Update Status</h2>
               <div className="space-y-2">

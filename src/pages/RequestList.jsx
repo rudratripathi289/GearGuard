@@ -1,6 +1,7 @@
 import { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
 import { requestService } from '../services/requestService';
+import { useAuth } from '../hooks/useAuth';
 import Loading from '../components/common/Loading';
 import ErrorState from '../components/common/ErrorState';
 import EmptyState from '../components/common/EmptyState';
@@ -8,19 +9,22 @@ import PriorityBadge from '../components/common/PriorityBadge';
 import StatusBadge from '../components/common/StatusBadge';
 
 export default function RequestList() {
+  const { user } = useAuth();
   const [requests, setRequests] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
   const [filter, setFilter] = useState('all');
 
   useEffect(() => {
-    loadRequests();
-  }, []);
+    if (user) {
+      loadRequests();
+    }
+  }, [user]);
 
   const loadRequests = async () => {
     try {
       setLoading(true);
-      const response = await requestService.getAll();
+      const response = await requestService.getAll(user);
       setRequests(response.data);
     } catch (err) {
       setError(err.message);
@@ -168,9 +172,9 @@ export default function RequestList() {
                         to={`/requests/${request.id}`}
                         className="text-gray-800 hover:text-blue-600"
                       >
-                        {request.issueDescription.length > 50
-                          ? request.issueDescription.substring(0, 50) + '...'
-                          : request.issueDescription}
+                      {request.issueDescription && request.issueDescription.length > 50
+                        ? request.issueDescription.substring(0, 50) + '...'
+                        : request.issueDescription || 'No description'}
                       </Link>
                     </td>
                     <td className="py-3 px-4">

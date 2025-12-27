@@ -21,9 +21,9 @@ export const AuthProvider = ({ children }) => {
     initAuth();
   }, []);
 
-  const login = async (email, password) => {
+  const login = async (email, password, userType = null) => {
     try {
-      const response = await authService.login(email, password);
+      const response = await authService.login(email, password, userType);
       setUser(response.data.user);
       return response.data;
     } catch (error) {

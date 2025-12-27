@@ -1,5 +1,6 @@
 import { Link, useNavigate } from 'react-router-dom';
 import { useAuth } from '../../hooks/useAuth';
+import { isMaintenanceTeam } from '../../utils/permissions';
 
 export default function Header() {
   const { user, logout } = useAuth();
@@ -38,12 +39,14 @@ export default function Header() {
             >
               Requests
             </Link>
-            <Link
-              to="/kanban"
-              className="text-gray-700 hover:text-blue-600 px-3 py-2 rounded-md text-sm font-medium"
-            >
-              Kanban
-            </Link>
+            {isMaintenanceTeam(user?.role) && (
+              <Link
+                to="/kanban"
+                className="text-gray-700 hover:text-blue-600 px-3 py-2 rounded-md text-sm font-medium"
+              >
+                Kanban
+              </Link>
+            )}
             <div className="flex items-center space-x-3 ml-4 pl-4 border-l border-gray-300">
               <span className="text-sm text-gray-700">
                 {user?.name} ({user?.role})

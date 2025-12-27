@@ -1,5 +1,7 @@
 import { useState, useEffect } from 'react';
 import { requestService } from '../../services/requestService';
+import { useAuth } from '../../hooks/useAuth';
+import { isMaintenanceTeam } from '../../utils/permissions';
 import { KanbanStatus } from '../../types';
 import KanbanColumn from './KanbanColumn';
 import Loading from '../common/Loading';
@@ -14,13 +16,18 @@ const COLUMN_STATUSES = [
 ];
 
 export default function KanbanBoard() {
+  const { user } = useAuth();
   const [requests, setRequests] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
 
   useEffect(() => {
-    loadRequests();
-  }, []);
+    if (user && isMaintenanceTeam(user.role)) {
+      loadRequests();
+    } else if (user && !isMaintenanceTeam(user.role)) {
+      setLoading(false);
+    }
+  }, [user]);
 
   const loadRequests = async () => {
     try {

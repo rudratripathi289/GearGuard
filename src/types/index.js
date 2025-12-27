@@ -39,6 +39,7 @@ export const Equipment = {
   location: '',
   status: EquipmentStatus.ACTIVE,
   description: '',
+  assignedToUserId: null,
   createdAt: '',
   updatedAt: '',
 };
@@ -47,6 +48,7 @@ export const MaintenanceRequest = {
   id: '',
   equipmentId: '',
   equipment: null,
+  createdByUserId: '',
   issueDescription: '',
   priority: Priority.MEDIUM,
   status: KanbanStatus.NEW,

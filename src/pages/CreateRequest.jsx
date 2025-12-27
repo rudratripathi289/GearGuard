@@ -1,11 +1,13 @@
 import { useNavigate, useSearchParams } from 'react-router-dom';
 import { requestService } from '../services/requestService';
+import { useAuth } from '../hooks/useAuth';
 import CreateRequestForm from '../components/forms/CreateRequestForm';
 import Loading from '../components/common/Loading';
 import { useState } from 'react';
 
 export default function CreateRequest() {
   const navigate = useNavigate();
+  const { user } = useAuth();
   const [searchParams] = useSearchParams();
   const equipmentId = searchParams.get('equipmentId');
   const [loading, setLoading] = useState(false);
@@ -16,8 +18,8 @@ export default function CreateRequest() {
       await requestService.create({
         ...formData,
         requestDate: new Date().toISOString(),
-      });
-      navigate('/requests');
+      }, user.id);
+      navigate('/dashboard');
     } catch (error) {
       alert('Failed to create request: ' + error.message);
     } finally {

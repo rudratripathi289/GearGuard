@@ -15,5 +15,14 @@ export const userService = {
     const technicians = mockUsers.filter((u) => u.role === UserRole.TECHNICIAN);
     return { data: technicians };
   },
+
+  async getById(id) {
+    await delay(200);
+    const user = mockUsers.find((u) => u.id === id);
+    if (!user) {
+      throw new Error('User not found');
+    }
+    return { data: user };
+  },
 };
 

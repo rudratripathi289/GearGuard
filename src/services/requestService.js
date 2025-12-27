@@ -1,13 +1,19 @@
 import api from './api';
 import { mockRequests, mockEquipment, mockUsers } from './mockData';
-import { KanbanStatus } from '../types';
+import { KanbanStatus, UserRole } from '../types';
 
 const delay = (ms) => new Promise((resolve) => setTimeout(resolve, ms));
 
 export const requestService = {
-  async getAll() {
+  async getAll(user = null) {
     await delay(500);
-    return { data: mockRequests };
+    let requests = [...mockRequests];
+    
+    if (user && user.role === UserRole.USER) {
+      requests = requests.filter((req) => req.createdByUserId === user.id);
+    }
+    
+    return { data: requests };
   },
 
   async getById(id) {
@@ -19,13 +25,14 @@ export const requestService = {
     return { data: request };
   },
 
-  async create(requestData) {
+  async create(requestData, userId) {
     await delay(500);
     const equipment = mockEquipment.find((eq) => eq.id === requestData.equipmentId);
     const newRequest = {
       id: String(mockRequests.length + 1),
       ...requestData,
       equipment,
+      createdByUserId: userId,
       status: KanbanStatus.NEW,
       assignedTechnicianId: null,
       assignedTechnician: null,

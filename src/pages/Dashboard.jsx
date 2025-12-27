@@ -189,9 +189,9 @@ export default function Dashboard() {
                         to={`/requests/${request.id}`}
                         className="text-gray-800 hover:text-blue-600"
                       >
-                        {request.issueDescription.length > 50
+                        {request.issueDescription && request.issueDescription.length > 50
                           ? request.issueDescription.substring(0, 50) + '...'
-                          : request.issueDescription}
+                          : request.issueDescription || 'No description'}
                       </Link>
                     </td>
                     <td className="py-3 px-4">

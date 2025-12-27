@@ -2,6 +2,8 @@ import { useState, useEffect } from 'react';
 import { useParams, Link, useNavigate } from 'react-router-dom';
 import { equipmentService } from '../services/equipmentService';
 import { requestService } from '../services/requestService';
+import { useAuth } from '../hooks/useAuth';
+import { canViewEquipment } from '../utils/permissions';
 import Loading from '../components/common/Loading';
 import ErrorState from '../components/common/ErrorState';
 import PriorityBadge from '../components/common/PriorityBadge';
@@ -11,21 +13,24 @@ import { EquipmentStatus } from '../types';
 export default function EquipmentDetail() {
   const { id } = useParams();
   const navigate = useNavigate();
+  const { user } = useAuth();
   const [equipment, setEquipment] = useState(null);
   const [relatedRequests, setRelatedRequests] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
 
   useEffect(() => {
-    loadData();
-  }, [id]);
+    if (user) {
+      loadData();
+    }
+  }, [id, user]);
 
   const loadData = async () => {
     try {
       setLoading(true);
       const [equipmentRes, requestsRes] = await Promise.all([
         equipmentService.getById(id),
-        requestService.getAll(),
+        requestService.getAll(user),
       ]);
 
       setEquipment(equipmentRes.data);
@@ -53,6 +58,10 @@ export default function EquipmentDetail() {
 
   if (!equipment) {
     return <ErrorState message="Equipment not found" />;
+  }
+
+  if (!canViewEquipment(user?.role, equipment, user?.id)) {
+    return <ErrorState message="You don't have permission to view this equipment" />;
   }
 
   const getStatusColor = (status) => {
@@ -183,9 +192,9 @@ export default function EquipmentDetail() {
                         to={`/requests/${request.id}`}
                         className="text-gray-800 hover:text-blue-600"
                       >
-                        {request.issueDescription.length > 50
+                        {request.issueDescription && request.issueDescription.length > 50
                           ? request.issueDescription.substring(0, 50) + '...'
-                          : request.issueDescription}
+                          : request.issueDescription || 'No description'}
                       </Link>
                     </td>
                     <td className="py-3 px-4">

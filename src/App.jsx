@@ -3,7 +3,7 @@ import { AuthProvider, useAuth } from './hooks/useAuth';
 import ProtectedRoute from './components/layout/ProtectedRoute';
 import Header from './components/layout/Header';
 import Login from './pages/Login';
-import Dashboard from './pages/Dashboard';
+import DashboardRouter from './components/layout/DashboardRouter';
 import EquipmentList from './pages/EquipmentList';
 import EquipmentDetail from './pages/EquipmentDetail';
 import RequestList from './pages/RequestList';
@@ -30,7 +30,7 @@ function AppRoutes() {
         element={
           <ProtectedRoute>
             <Header />
-            <Dashboard />
+            <DashboardRouter />
           </ProtectedRoute>
         }
       />
@@ -82,7 +82,7 @@ function AppRoutes() {
       <Route
         path="/kanban"
         element={
-          <ProtectedRoute>
+          <ProtectedRoute requiredRole="maintenance">
             <Header />
             <Kanban />
           </ProtectedRoute>

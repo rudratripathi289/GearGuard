@@ -1,12 +1,19 @@
 import api from './api';
 import { mockEquipment } from './mockData';
+import { UserRole } from '../types';
 
 const delay = (ms) => new Promise((resolve) => setTimeout(resolve, ms));
 
 export const equipmentService = {
-  async getAll() {
+  async getAll(user = null) {
     await delay(500);
-    return { data: mockEquipment };
+    let equipment = [...mockEquipment];
+    
+    if (user && user.role === UserRole.USER) {
+      equipment = equipment.filter((eq) => eq.assignedToUserId === user.id);
+    }
+    
+    return { data: equipment };
   },
 
   async getById(id) {

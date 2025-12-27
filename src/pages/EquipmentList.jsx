@@ -16,14 +16,18 @@ export default function EquipmentList() {
   const [editingEquipment, setEditingEquipment] = useState(null);
   const { isAdmin } = useAuth();
 
+  const { user } = useAuth();
+
   useEffect(() => {
-    loadEquipment();
-  }, []);
+    if (user) {
+      loadEquipment();
+    }
+  }, [user]);
 
   const loadEquipment = async () => {
     try {
       setLoading(true);
-      const response = await equipmentService.getAll();
+      const response = await equipmentService.getAll(user);
       setEquipment(response.data);
     } catch (err) {
       setError(err.message);
